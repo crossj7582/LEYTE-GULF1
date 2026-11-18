@@ -1,0 +1,493 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LEYTE GULF: LAST GAMBLE</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+
+:root {
+  --green:#53ff86;
+  --blue:#42c8ff;
+  --red:#ff5757;
+  --gold:#ffd166;
+  --bg:#07131f;
+}
+
+* {box-sizing:border-box}
+
+body {
+ margin:0;
+ background:var(--bg);
+ color:#e5f1ff;
+ font-family:'VT323',monospace;
+ font-size:22px;
+ background-image:
+ linear-gradient(rgba(30,100,140,.08) 1px,transparent 1px),
+ linear-gradient(90deg,rgba(30,100,140,.08) 1px,transparent 1px);
+ background-size:20px 20px;
+}
+
+header {
+ text-align:center;
+ padding:24px 10px;
+ border-bottom:3px solid var(--green);
+ background:#0b2230;
+}
+
+h1 {
+ font-family:'Press Start 2P',monospace;
+ font-size:clamp(16px,3vw,27px);
+ color:var(--green);
+ text-shadow:3px 3px #14542b;
+ line-height:1.7;
+}
+
+.subtitle {color:var(--gold);font-size:24px}
+
+main {max-width:1000px;margin:auto;padding:18px}
+
+.panel {
+ background:#102536;
+ border:3px solid #2e6175;
+ padding:18px;
+ margin-bottom:16px;
+ box-shadow:5px 5px #02080d;
+}
+
+.stats {
+ display:grid;
+ grid-template-columns:repeat(3,1fr);
+ gap:10px;
+ margin-bottom:15px;
+}
+
+.stat {
+ background:#071823;
+ padding:12px;
+ text-align:center;
+ border:2px solid #28566b;
+}
+
+.stat strong {
+ display:block;
+ font-family:'Press Start 2P';
+ font-size:10px;
+ margin-bottom:10px;
+ color:var(--gold);
+}
+
+.bar {
+ height:12px;
+ background:#253a48;
+ margin-top:8px;
+}
+
+.fill {height:100%;transition:width .4s}
+
+.map {
+ min-height:210px;
+ background:#062b3b;
+ border:3px solid #25708a;
+ position:relative;
+ overflow:hidden;
+ display:flex;
+ justify-content:space-around;
+ align-items:center;
+ text-align:center;
+ background-image:
+ radial-gradient(circle at 20% 30%,#164b60 1px,transparent 2px),
+ radial-gradient(circle at 70% 70%,#164b60 1px,transparent 2px);
+ background-size:35px 35px;
+}
+
+.unit {font-size:34px;display:block}
+.map-label {font-size:17px;color:#a8e5ff}
+.sea {color:#57caff;font-size:16px;position:absolute;bottom:7px}
+
+h2 {color:var(--gold);font-size:30px;margin:4px 0 12px}
+h3 {color:var(--green);font-size:25px}
+
+button {
+ display:block;
+ width:100%;
+ margin:10px 0;
+ padding:13px;
+ color:#fff;
+ background:#153c51;
+ border:2px solid #42c8ff;
+ font-family:'VT323',monospace;
+ font-size:23px;
+ text-align:left;
+ cursor:pointer;
+ transition:.15s;
+}
+
+button:hover:not(:disabled) {
+ background:#23617b;
+ transform:translateX(4px);
+ border-color:var(--gold);
+}
+
+button:disabled {opacity:.45;cursor:not-allowed}
+
+button span {color:var(--gold)}
+
+#feedback {
+ border-left:5px solid var(--gold);
+ padding:12px;
+ background:#071823;
+ margin-top:15px;
+}
+
+#next {
+ background:#176638;
+ border-color:var(--green);
+ text-align:center;
+ font-family:'Press Start 2P';
+ font-size:11px;
+ padding:18px;
+}
+
+#next:disabled {display:none}
+
+.small {
+ color:#9bb7c7;
+ font-size:19px;
+}
+
+#start {
+ text-align:center;
+ padding:35px 15px;
+}
+
+#start button {text-align:center;background:#176638}
+
+.hidden {display:none}
+
+footer {
+ text-align:center;
+ color:#64899c;
+ padding:20px;
+ font-size:17px;
+}
+
+@media(max-width:550px) {
+ .stats {grid-template-columns:1fr}
+ .map {min-height:160px}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+ <h1>LEYTE GULF<br>LAST GAMBLE</h1>
+ <div class="subtitle">PACIFIC WAR • OCTOBER 1944</div>
+</header>
+
+<main>
+
+<section id="start" class="panel">
+ <div style="font-size:65px">🚢 ✈️ ⚓</div>
+ <h2>COMMANDER, REPORT FOR DUTY</h2>
+ <p>The American invasion fleet is approaching Leyte in the Philippines.</p>
+ <p>Japan has launched a desperate operation to destroy the American fleet.</p>
+ <p><strong>Your mission:</strong> Protect the invasion force and defeat the Japanese naval attack.</p>
+ <p class="small">8 COMMAND DECISIONS • HISTORICAL STRATEGY • MULTIPLE ENDINGS</p>
+ <button onclick="startGame()">▶ BEGIN OPERATION</button>
+</section>
+
+<section id="game" class="hidden">
+
+<div class="stats">
+ <div class="stat">
+  <strong>INVASION SECURITY</strong>
+  <span id="security">75</span>%
+  <div class="bar"><div id="securitybar" class="fill" style="width:75%;background:#53ff86"></div></div>
+ </div>
+ <div class="stat">
+  <strong>AMERICAN FLEET</strong>
+  <span id="fleet">85</span>%
+  <div class="bar"><div id="fleetbar" class="fill" style="width:85%;background:#42c8ff"></div></div>
+ </div>
+ <div class="stat">
+  <strong>JAPANESE THREAT</strong>
+  <span id="threat">100</span>%
+  <div class="bar"><div id="threatbar" class="fill" style="width:100%;background:#ff5757"></div></div>
+ </div>
+</div>
+
+<div class="panel">
+ <div class="small" id="date">OCTOBER 23, 1944</div>
+ <h2 id="title"></h2>
+ <div class="map" id="map"></div>
+ <p id="story"></p>
+ <h3>YOUR ORDERS, ADMIRAL:</h3>
+ <div id="choices"></div>
+ <div id="feedback" class="hidden"></div>
+ <button id="next" onclick="nextTurn()" disabled>CONTINUE MISSION ▶</button>
+</div>
+
+<div class="panel">
+ <strong style="color:var(--gold)">MISSION INTEL</strong>
+ <p id="intel">Monitor enemy movements. Protect the invasion fleet.</p>
+ <p class="small">Historical note: The Battle of Leyte Gulf consisted of several connected naval engagements from October 23–26, 1944.</p>
+</div>
+
+</section>
+
+<section id="ending" class="panel hidden">
+ <div style="text-align:center">
+ <div style="font-size:65px">🏅</div>
+ <h2 id="endtitle"></h2>
+ <h3 id="grade"></h3>
+ </div>
+ <p id="endstory"></p>
+ <div id="results"></div>
+ <h3>FINAL HISTORY QUESTION</h3>
+ <p>Why was the Battle of Leyte Gulf a turning point in the Pacific War?</p>
+ <p>Explain how Japan's decision to risk its remaining fleet affected its ability to defend its empire and stop the American advance.</p>
+ <button onclick="location.reload()" style="text-align:center">↻ REPLAY THE BATTLE</button>
+</section>
+
+</main>
+
+<footer>RETRO COMMAND SYSTEM • PACIFIC THEATER • 1944</footer>
+
+<script>
+
+const missions = [
+{
+ date:"OCTOBER 23, 1944",
+ title:"1. THE INVASION FLEET",
+ map:"⚓|🚢|✈️",
+ story:"American forces are landing on Leyte. Intelligence reports that Japanese naval forces are approaching from several directions. Your fleet must protect the invasion.",
+ intel:"The American invasion fleet is vulnerable while troops and supplies are being unloaded.",
+ choices:[
+ ["Concentrate battleships and carriers around the invasion fleet",10,8,-10,"A powerful defensive formation protects the transports. However, the fleet has less flexibility."],
+ ["Divide the fleet into independent task forces",5,3,-5,"Your fleet gains flexibility, but separated forces may struggle to support one another."],
+ ["Send the main fleet hunting for Japanese ships", -12,-8,-12,"You take the fight to Japan, but leave the invasion fleet exposed."]
+ ]
+},
+{
+ date:"OCTOBER 24, 1944",
+ title:"2. CARRIERS UNDER THREAT",
+ map:"✈️|🚢|✈️",
+ story:"Japanese aircraft threaten American carriers. Your carrier groups must decide whether to launch aircraft offensively or maintain a defensive patrol.",
+ intel:"Carrier aircraft provide long-range striking power and protect the fleet from enemy air attacks.",
+ choices:[
+ ["Launch a major strike against Japanese ships",5,-8,-22,"Your aircraft damage enemy ships, but losses reduce your ability to maintain air cover."],
+ ["Maintain combat air patrol over the fleet",12,4,-12,"Fighter patrols intercept enemy aircraft and help protect the invasion."],
+ ["Move carriers closer to the landing beaches",8,-12,-8,"Your carriers provide immediate support but risk exposure to enemy attack."]
+ ]
+},
+{
+ date:"OCTOBER 24, 1944",
+ title:"3. THE BATTLESHIP LINE",
+ map:"⚓|🚢|🚢",
+ story:"Japanese battleships and cruisers are approaching through the Sibuyan Sea and the San Bernardino Strait. Your battleships must prepare to stop them.",
+ intel:"American battleships possess enormous firepower. Positioning them incorrectly could leave the invasion exposed.",
+ choices:[
+ ["Position battleships to block enemy approaches",12,5,-15,"Your battleships establish a defensive barrier."],
+ ["Send battleships forward to attack the enemy",3,-10,-18,"Your ships inflict damage but expose themselves to counterattack."],
+ ["Keep battleships near the invasion transports",15,0,-5,"The invasion fleet remains protected, but enemy warships retain room to maneuver."]
+ ]
+},
+{
+ date:"OCTOBER 24, 1944",
+ title:"4. DESTROYER SCREEN",
+ map:"🚢|⚓|🚢",
+ story:"Japanese submarines and surface ships threaten the American fleet. Destroyers can screen larger ships or launch aggressive torpedo attacks.",
+ intel:"Destroyers are small, fast warships designed for screening, submarine hunting, and torpedo attacks.",
+ choices:[
+ ["Maintain a defensive destroyer screen",10,5,-8,"Your destroyers protect larger ships from submarines and enemy attacks."],
+ ["Launch a nighttime torpedo assault",4,-5,-18,"Your destroyers attack aggressively. Japanese ships take losses, but your own ships are exposed."],
+ ["Use destroyers to escort transports",15,2,-5,"The transports gain protection, although enemy warships remain a threat."]
+ ]
+},
+{
+ date:"OCTOBER 24-25, 1944",
+ title:"5. ENEMY AIR ATTACK",
+ map:"✈️|🚢|💥",
+ story:"Japanese aircraft are attacking American ships. Some enemy pilots are willing to sacrifice themselves by crashing directly into American vessels.",
+ intel:"Japan is increasingly using kamikaze tactics. Your commanders must decide how to respond.",
+ choices:[
+ ["Expand fighter patrols and intercept incoming planes",12,-5,-12,"Your fighters intercept many aircraft before they reach the fleet."],
+ ["Concentrate anti-aircraft guns around carriers",8,2,-8,"Dense defensive fire protects your most valuable ships."],
+ ["Preserve aircraft and accept some losses", -10,8,-5,"You save aircraft for later, but several American ships suffer damage."]
+ ]
+},
+{
+ date:"OCTOBER 25, 1944",
+ title:"6. THE NORTHERN DECEPTION",
+ map:"🚢|🚢|⚓",
+ story:"Japanese Admiral Ozawa's Northern Force appears to threaten your carriers. Reports suggest the Japanese carriers may be vulnerable. But something is wrong: these carriers have very few aircraft.",
+ intel:"The Japanese plan is to lure powerful American carrier forces north, away from the invasion fleet. This is a major strategic deception.",
+ choices:[
+ ["Pursue the Japanese carriers north", -18,5,-20,"You pursue Ozawa's carriers. The American invasion fleet is left with fewer protective forces."],
+ ["Keep a major force protecting Leyte",15,0,-10,"You recognize that the invasion fleet is the priority."],
+ ["Divide forces between the northern threat and Leyte",5,-5,-15,"You attempt to address both threats, but neither force has overwhelming strength."]
+ ]
+},
+{
+ date:"OCTOBER 25, 1944",
+ title:"7. THE BATTLE OFF SAMAR",
+ map:"🚢|💥|⚓",
+ story:"A powerful Japanese surface force has surprised a small American escort carrier group off Samar. Your smaller ships are in desperate danger. Japanese battleships and cruisers are attacking.",
+ intel:"The American Taffy 3 escort carrier group is facing a vastly superior Japanese surface force. Destroyers and aircraft must buy time.",
+ choices:[
+ ["Order destroyers to charge and launch torpedoes",12,-15,-20,"American destroyers launch a courageous attack. Their sacrifice disrupts the Japanese formation."],
+ ["Launch every available aircraft against Japanese ships",10,-8,-18,"Repeated air attacks confuse the Japanese force and disrupt its advance."],
+ ["Order an immediate retreat toward the invasion fleet", -12,8,-5,"You preserve ships, but the Japanese force continues threatening the escort carriers."]
+ ]
+},
+{
+ date:"OCTOBER 25-26, 1944",
+ title:"8. THE FINAL DECISION",
+ map:"🚢|🇯🇵|⚓",
+ story:"The Japanese naval assault is collapsing. The enemy has suffered heavy losses, but the invasion fleet still needs protection. Do you pursue the retreating enemy or secure the landing beaches?",
+ intel:"Japan has committed much of its remaining major naval strength. The American fleet now has overwhelming strategic superiority.",
+ choices:[
+ ["Protect the invasion fleet and secure Leyte",15,5,-20,"You secure the landing force and ensure the invasion continues."],
+ ["Pursue the retreating Japanese fleet",0,-5,-15,"You inflict additional damage, but some ships are exposed during the pursuit."],
+ ["Reorganize and prepare for the next island invasion",10,10,-12,"You preserve American strength and prepare for the next phase of the Pacific campaign."]
+ ]
+}
+];
+
+let turn=0;
+let security=75;
+let fleet=85;
+let threat=100;
+let selected=false;
+
+function startGame(){
+ document.getElementById("start").classList.add("hidden");
+ document.getElementById("game").classList.remove("hidden");
+ render();
+}
+
+function updateStats(){
+ security=Math.max(0,Math.min(100,security));
+ fleet=Math.max(0,Math.min(100,fleet));
+ threat=Math.max(0,Math.min(100,threat));
+
+ document.getElementById("security").textContent=security;
+ document.getElementById("fleet").textContent=fleet;
+ document.getElementById("threat").textContent=threat;
+
+ document.getElementById("securitybar").style.width=security+"%";
+ document.getElementById("fleetbar").style.width=fleet+"%";
+ document.getElementById("threatbar").style.width=threat+"%";
+}
+
+function render(){
+ selected=false;
+ const m=missions[turn];
+
+ document.getElementById("date").textContent=m.date;
+ document.getElementById("title").textContent=m.title;
+ document.getElementById("story").textContent=m.story;
+ document.getElementById("intel").textContent=m.intel;
+ document.getElementById("map").innerHTML=
+ m.map.split("|").map((unit,i)=>
+ `<div><span class="unit">${unit}</span><span class="map-label">${["AMERICAN FORCES","BATTLE ZONE","JAPANESE FORCES"][i]}</span></div>`
+ ).join("")+'<span class="sea">PACIFIC OCEAN • TACTICAL DISPLAY</span>';
+
+ document.getElementById("feedback").classList.add("hidden");
+ document.getElementById("next").disabled=true;
+ document.getElementById("choices").innerHTML="";
+
+ m.choices.forEach((c,i)=>{
+  const b=document.createElement("button");
+  b.innerHTML=`<span>OPTION ${i+1}:</span> ${c[0]}`;
+  b.onclick=()=>choose(i);
+  document.getElementById("choices").appendChild(b);
+ });
+
+ updateStats();
+}
+
+function choose(index){
+ if(selected)return;
+ selected=true;
+
+ const m=missions[turn];
+ const c=m.choices[index];
+
+ security+=c[1];
+ fleet+=c[2];
+ threat+=c[3];
+
+ updateStats();
+
+ document.querySelectorAll("#choices button").forEach((b,i)=>{
+  b.disabled=true;
+  if(i===index)b.style.borderColor="#53ff86";
+ });
+
+ const fb=document.getElementById("feedback");
+ fb.classList.remove("hidden");
+ fb.innerHTML=`<strong style="color:var(--gold)">COMMAND REPORT:</strong><br>${c[4]}<br><br><strong>Historical connection:</strong> Your decision changes the outcome of this simulation. In the actual battle, American commanders faced competing threats and incomplete intelligence.`;
+
+ document.getElementById("next").disabled=false;
+}
+
+function nextTurn(){
+ turn++;
+ if(turn>=missions.length){
+  finish();
+ }else{
+  render();
+ }
+}
+
+function finish(){
+ document.getElementById("game").classList.add("hidden");
+ document.getElementById("ending").classList.remove("hidden");
+
+ let average=Math.round((security+fleet+(100-threat))/3);
+
+ let title,grade,story;
+
+ if(average>=80){
+  title="ADMIRAL! VICTORY!";
+  grade="COMMAND RATING: A";
+  story="Your decisions protected the American invasion and severely weakened the Japanese fleet. Leyte remains secure. American naval dominance in the Pacific is now overwhelming.";
+ }else if(average>=60){
+  title="MISSION ACCOMPLISHED";
+  grade="COMMAND RATING: B";
+  story="The invasion succeeds, but your fleet suffers serious losses or leaves some threats unresolved. American forces maintain the strategic advantage.";
+ }else if(average>=40){
+  title="COSTLY VICTORY";
+  grade="COMMAND RATING: C";
+  story="Your fleet survives, but Japanese attacks cause major problems. The invasion is possible, but the cost is high.";
+ }else{
+  title="FLEET IN DANGER!";
+  grade="COMMAND RATING: D";
+  story="Your decisions allowed the Japanese fleet to seriously threaten the invasion. American naval forces must reorganize before continuing the Pacific campaign.";
+ }
+
+ document.getElementById("endtitle").textContent=title;
+ document.getElementById("grade").textContent=grade;
+ document.getElementById("endstory").textContent=story;
+
+ document.getElementById("results").innerHTML=`
+ <h3>FINAL COMMAND REPORT</h3>
+ <p>Invasion Security: ${security}/100</p>
+ <p>American Fleet Strength: ${fleet}/100</p>
+ <p>Japanese Threat Remaining: ${threat}/100</p>
+ <p>Overall Command Score: ${average}/100</p>
+ <hr>
+ <p><strong>THE HISTORICAL TAKEAWAY:</strong></p>
+ <p>The Battle of Leyte Gulf destroyed much of Japan's remaining ability to challenge American naval power. American control of the Pacific allowed the United States to intensify its bombing campaign against Japan and prepare for the final invasion plans.</p>
+ <p><strong>Remember:</strong> The battle did not immediately end the war. Japan continued fighting until its surrender in August 1945.</p>
+ `;
+}
+
+</script>
+</body>
+</html>
